@@ -116,14 +116,12 @@ public class WalkingSearchListActivity extends AppCompatActivity implements Baid
             public void onLocation(BDLocation location) {
                 Log.d("xxl", location.getCity() + "latu:" + location.getLatitude());
                 mCurrentLatlng = new LatLng(location.getLatitude(), location.getLongitude());
-                // 如果是第一次定位
-                LatLng ll = new LatLng(location.getLatitude(), location.getLongitude());
 
                 if (isFirstLocate) {
                     isFirstLocate = false;
                     //给地图设置状态
                     // 设置地图中心点以及缩放级别
-                    mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newLatLngZoom(ll, 19f));
+                    mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newLatLngZoom(mCurrentLatlng, 19f));
                 }
                 MyLocationData locData = new MyLocationData.Builder()
                         .accuracy(location.getRadius())
@@ -141,17 +139,7 @@ public class WalkingSearchListActivity extends AppCompatActivity implements Baid
                         120.191436);
             }
         });
-        //地图中心点
-        MapStatusUpdate mMapCenter = MapStatusUpdateFactory.newLatLngZoom(mCurrentLatlng, 19f);
 
-        // 设置地图的可移动区域
-        //mOverlayBounds = new LatLngBounds.Builder()
-        //        .include(new LatLng(30.252782, 120.163385))// 东北角坐标
-        //        .include(new LatLng(30.265519, 120.173382))// 西南角坐标
-        //        .build();
-
-        // 设置地图中心点以及缩放级别
-        mBaiduMap.setMapStatus(mMapCenter);
 
         // 地图点击事件处理
         mBaiduMap.setOnMapClickListener(this);
@@ -160,10 +148,6 @@ public class WalkingSearchListActivity extends AppCompatActivity implements Baid
         mSearch = RoutePlanSearch.newInstance();
         mSearch.setOnGetRoutePlanResultListener(this);
 
-        //设置我的位置
-        mBaiduMap.setMyLocationData(getMyLocationData());
-        mBaiduMap.setMyLocationConfiguration(new MyLocationConfiguration(MyLocationConfiguration.LocationMode.NORMAL,
-                true, null));
     }
 
     private void getBundleData() {
