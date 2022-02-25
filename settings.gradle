@@ -1,0 +1,3 @@
+include ':bdmap'
+include ':app'
+rootProject.name = "BDMapModule"
