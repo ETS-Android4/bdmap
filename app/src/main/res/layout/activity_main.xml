@@ -19,6 +19,17 @@
         android:layout_height="60dp"
         android:text="打开地图" />
 
+    <Button
+        android:id="@+id/btn_1"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="打开地图" />
+
+   <!-- <Button
+        android:id="@+id/btn_2"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="打开地图" />-->
 
 
 </LinearLayout>

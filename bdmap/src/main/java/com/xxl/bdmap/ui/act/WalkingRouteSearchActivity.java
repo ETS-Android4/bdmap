@@ -20,10 +20,8 @@ import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
 import com.baidu.mapapi.map.MapPoi;
-import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
-import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.search.core.SearchResult;
@@ -40,11 +38,11 @@ import com.baidu.mapapi.search.route.WalkingRouteResult;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.listener.OnItemClickListener;
 import com.lxj.xpopup.XPopup;
-import com.xxl.bdmap.ui.map.BDLocationUtil;
 import com.xxl.bdmap.R;
 import com.xxl.bdmap.data.AddressResult;
 import com.xxl.bdmap.data.IfLyMapData;
 import com.xxl.bdmap.ui.LocationListBottomPop;
+import com.xxl.bdmap.ui.map.BDLocationUtil;
 import com.xxl.bdmap.ui.map.RouteLineAdapter;
 import com.xxl.bdmap.ui.map.SelectRouteDialog;
 import com.xxl.bdmap.ui.map.WalkingRouteOverlay;
@@ -61,7 +59,7 @@ import java.util.HashMap;
  * Created DateTime: 2022/2/14 16:15
  * Created by xueli.
  */
-public class WalkingSearchListActivity extends AppCompatActivity implements BaiduMap.OnMapClickListener,
+public class WalkingRouteSearchActivity extends AppCompatActivity implements BaiduMap.OnMapClickListener,
         OnGetRoutePlanResultListener {
 
     // 浏览路线节点相关
@@ -83,8 +81,7 @@ public class WalkingSearchListActivity extends AppCompatActivity implements Baid
     private LatLng mCurrentLatlng;
 
     LocationListBottomPop pop;
-
-    boolean isFirstLocate = true;
+    private boolean isFirstLocate = true;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,7 +94,7 @@ public class WalkingSearchListActivity extends AppCompatActivity implements Baid
         findViewById(R.id.back).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (pop.isShow()) {
+                if (pop != null && pop.isShow()) {
                     pop.dismiss();
                 }
                 finish();
@@ -129,7 +126,6 @@ public class WalkingSearchListActivity extends AppCompatActivity implements Baid
                         .direction(location.getDirection()).latitude(location.getLatitude())
                         .longitude(location.getLongitude()).build();
                 mBaiduMap.setMyLocationData(locData);
-
             }
 
             @Override
@@ -139,14 +135,15 @@ public class WalkingSearchListActivity extends AppCompatActivity implements Baid
                         120.191436);
             }
         });
-
-
+        //开启地图的定位图层
+        mBaiduMap.setMyLocationEnabled(true);
         // 地图点击事件处理
         mBaiduMap.setOnMapClickListener(this);
 
         // 初始化搜索模块，注册事件监听
         mSearch = RoutePlanSearch.newInstance();
         mSearch.setOnGetRoutePlanResultListener(this);
+
 
     }
 
@@ -158,11 +155,11 @@ public class WalkingSearchListActivity extends AppCompatActivity implements Baid
             if (mapData != null && mapData.getData() != null) {
                 locationList = (ArrayList<AddressResult>) mapData.getData().getResult();
                 if (locationList.size() <= 0) return;
-                //底部显示列表
+                // 底部显示列表
                 pop = new LocationListBottomPop(this, locationList);
                 if (!pop.isShow()) {
 //                    pop.show();
-                    new XPopup.Builder(WalkingSearchListActivity.this)
+                    new XPopup.Builder(WalkingRouteSearchActivity.this)
                             .moveUpToKeyboard(false) //如果不加这个，评论弹窗会移动到软键盘上面
                             .dismissOnTouchOutside(false)
                             .enableDrag(true)
@@ -211,7 +208,6 @@ public class WalkingSearchListActivity extends AppCompatActivity implements Baid
         if (!TextUtils.isEmpty(addr.getLatitude())) {//有经纬度优先使用经纬度，更准确
             HashMap map = MapConvertUtil.bd_encrypt(Double.parseDouble(addr.getLatitude()), Double.parseDouble(addr.getLongitude()));
             LatLng endLoc = new LatLng((Double) map.get("bd_lat"), (Double) map.get("bd_lon"));
-            ;
             endNode = PlanNode.withLocation(endLoc);
         } else {
             endNode = PlanNode.withCityNameAndPlaceName("杭州", "嘉里中心");
@@ -244,7 +240,7 @@ public class WalkingSearchListActivity extends AppCompatActivity implements Baid
             Log.d("xxl", result.getSuggestAddrInfo().getSuggestStartNode().size() + "");
             // 起终点或途经点地址有岐义，通过以下接口获取建议查询信息
             result.getSuggestAddrInfo();
-            AlertDialog.Builder builder = new AlertDialog.Builder(WalkingSearchListActivity.this);
+            AlertDialog.Builder builder = new AlertDialog.Builder(WalkingRouteSearchActivity.this);
             builder.setTitle("提示");
             builder.setMessage("检索地址有歧义，请重新设置。\n可通过getSuggestAddrInfo()接口获得建议查询信息");
             builder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
@@ -258,13 +254,13 @@ public class WalkingSearchListActivity extends AppCompatActivity implements Baid
         }
 
         if (result.error != SearchResult.ERRORNO.NO_ERROR) {
-            Toast.makeText(WalkingSearchListActivity.this, "抱歉，未找到结果", Toast.LENGTH_SHORT).show();
+            Toast.makeText(WalkingRouteSearchActivity.this, "抱歉，未找到结果", Toast.LENGTH_SHORT).show();
         } else {
 
             if (result.getRouteLines().size() > 1) {
                 mWalkingRouteResult = result;
                 if (!hasShowDialog) {
-                    SelectRouteDialog selectRouteDialog = new SelectRouteDialog(WalkingSearchListActivity.this,
+                    SelectRouteDialog selectRouteDialog = new SelectRouteDialog(WalkingRouteSearchActivity.this,
                             result.getRouteLines(), RouteLineAdapter.Type.WALKING_ROUTE);
                     selectRouteDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                         @Override
@@ -367,6 +363,9 @@ public class WalkingSearchListActivity extends AppCompatActivity implements Baid
         if (mSearch != null) {
             mSearch.destroy();
         }
+        BDLocationUtil.getInstance().stop();
+        // 关闭定位图层
+        mBaiduMap.setMyLocationEnabled(false);
         mBaiduMap.clear();
         mMapView.onDestroy();
     }

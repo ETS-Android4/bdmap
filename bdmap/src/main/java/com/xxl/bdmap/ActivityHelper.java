@@ -5,8 +5,8 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.xxl.bdmap.data.IfLyMapData;
+import com.xxl.bdmap.ui.act.WalkingRouteSearchActivity;
 import com.xxl.bdmap.ui.act.WalkingSearchActivity;
-import com.xxl.bdmap.ui.act.WalkingSearchListActivity;
 
 /**
  * Title: ActivityHelper
@@ -29,8 +29,9 @@ public class ActivityHelper {
     public static void startWalkListActivity(Context context, IfLyMapData data) {
         Bundle args = new Bundle();
         args.putSerializable("iflymapdata", data);
-        Intent intent = new Intent(context, WalkingSearchListActivity.class);
+        Intent intent = new Intent(context, WalkingRouteSearchActivity.class);
         intent.putExtras(args);
         context.startActivity(intent);
     }
+
 }
